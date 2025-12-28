@@ -13,11 +13,15 @@ const Preview = ({ data, subtotal, discountAmount, grandTotal }: PreviewProps) =
   return (
     <div
       id="invoice-preview"
-      className="bg-card rounded-xl border border-border shadow-invoice-lg overflow-hidden"
-      style={{ minHeight: '842px' }}
+      className="bg-white rounded-xl border border-border shadow-invoice-lg overflow-hidden"
+      style={{ 
+        width: '210mm', 
+        minHeight: '297mm',
+        margin: '0 auto',
+      }}
     >
-      {/* A4-style document */}
-      <div className="p-8 sm:p-10">
+      {/* A4-style document with proper padding */}
+      <div className="p-[15mm]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div className="flex items-center gap-4">

@@ -7,50 +7,61 @@ export const generatePDF = async (elementId: string, fileName: string): Promise<
     throw new Error('Element not found');
   }
 
-  // Capture the element as canvas
+  // Higher scale for better clarity and sharpness
+  const scale = 3;
+
+  // Capture the element as canvas with improved settings
   const canvas = await html2canvas(element, {
-    scale: 2,
+    scale: scale,
     useCORS: true,
     logging: false,
     backgroundColor: '#ffffff',
+    allowTaint: true,
   });
 
-  // Calculate dimensions for A4
-  const imgWidth = 210; // A4 width in mm
-  const pageHeight = 297; // A4 height in mm
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  // A4 dimensions in mm
+  const a4Width = 210;
+  const a4Height = 297;
 
-  // Create PDF
-  const pdf = new jsPDF('p', 'mm', 'a4');
-  let heightLeft = imgHeight;
-  let position = 0;
+  // Create PDF with A4 size
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+    compress: true,
+  });
 
-  // Add first page
-  pdf.addImage(
-    canvas.toDataURL('image/png'),
-    'PNG',
-    0,
-    position,
-    imgWidth,
-    imgHeight
-  );
-  heightLeft -= pageHeight;
+  // Calculate the proper dimensions maintaining aspect ratio
+  const imgWidth = a4Width;
+  const imgHeight = (canvas.height * a4Width) / canvas.width;
 
-  // Add more pages if content exceeds one page
-  while (heightLeft >= 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
+  // Get image data with high quality
+  const imgData = canvas.toDataURL('image/png', 1.0);
+
+  // Calculate total pages needed
+  const totalPages = Math.ceil(imgHeight / a4Height);
+
+  for (let page = 0; page < totalPages; page++) {
+    if (page > 0) {
+      pdf.addPage();
+    }
+
+    // Calculate vertical offset for each page
+    const yOffset = -(page * a4Height);
+
+    // Add the image with proper positioning
     pdf.addImage(
-      canvas.toDataURL('image/png'),
+      imgData,
       'PNG',
       0,
-      position,
+      yOffset,
       imgWidth,
-      imgHeight
+      imgHeight,
+      undefined,
+      'FAST'
     );
-    heightLeft -= pageHeight;
   }
 
-  // Download PDF
+  // Download PDF with proper filename
   pdf.save(`${fileName}.pdf`);
 };
